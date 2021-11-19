@@ -14,6 +14,14 @@ public class ApplicationController {
     @Autowired
     RestTemplate restTemplate;
 
+    @ApiOperation(value = "Get city weather by cityKey", response = ApplicationController.class, tags = "getCityWeather")
+    @RequestMapping(value = "/getCityWeather/{key}", method = RequestMethod.GET)
+    public String getCityWeather(@PathVariable String key) {
+        String response = restTemplate.exchange("http://dataservice.accuweather.com/currentconditions/v1/{key}?apikey=2ISwGQTvWNt4926KkCQnSbTUXDoWTXCc&language=fr-fr",
+                HttpMethod.GET, null, new ParameterizedTypeReference<String>() {}, key).getBody();
+        return response;
+    }
+
     String query;
 
     @ApiOperation(value = "Get city code by cityName", response = ApplicationController.class, tags = "getCityCode")
@@ -23,6 +31,7 @@ public class ApplicationController {
                 HttpMethod.GET, null, new ParameterizedTypeReference<String>() {}, query).getBody();
         return response;
     }
+
 
     @Bean
     public RestTemplate restTemplate() {
