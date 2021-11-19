@@ -1,10 +1,7 @@
 package com.project.m2dfs.project.meteo.controller;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.gson.Gson;
 import io.swagger.annotations.ApiOperation;
-import jdk.internal.org.objectweb.asm.TypeReference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.ParameterizedTypeReference;
@@ -18,14 +15,10 @@ import java.util.Map;
 @RestController
 public class ApplicationController {
 
-    static ObjectMapper mapper = new ObjectMapper();
-
     public String apikey = "oDJ13QACVPNW3HtX1w8tnqbPCMrZ3Vzx";
 
     @Autowired
     RestTemplate restTemplate;
-
-    String query;
 
     // Get City Code
     @ApiOperation(value = "Get city code by cityName", response = ApplicationController.class, tags = "getCityCode")
@@ -62,6 +55,28 @@ public class ApplicationController {
         String result = (String) jsonJavaRootObject.get("Key");
 
         String finalResponse = restTemplate.exchange("http://dataservice.accuweather.com/currentconditions/v1/" + result + "?apikey=" + apikey + "&language=fr-fr",
+                HttpMethod.GET, null, new ParameterizedTypeReference<String>() {}, result).getBody();
+
+        return finalResponse;
+    }
+
+    // Get City 1 Day Forecast with Name
+    @ApiOperation(value = "Get 1 day forecast by cityName", response = ApplicationController.class, tags = "get1DayForecastByCityName")
+    @RequestMapping(value = "/get1DayForecastByCityName/{query}", method = RequestMethod.GET)
+    public String get1DayForecastByCityName(@PathVariable String query) {
+        String response = restTemplate.exchange("http://dataservice.accuweather.com/locations/v1/cities/search?apikey=" + apikey + "&q=" + query + "&language=fr-fr",
+                HttpMethod.GET, null, new ParameterizedTypeReference<String>() {}, query).getBody();
+
+        String json = response;
+        System.out.println(json);
+        json = json.substring(1, json.length() - 1);
+        System.out.println(json);
+        Map jsonJavaRootObject = new Gson().fromJson(json, Map.class);
+        System.out.println(jsonJavaRootObject.get("Key"));
+
+        String result = (String) jsonJavaRootObject.get("Key");
+
+        String finalResponse = restTemplate.exchange("http://dataservice.accuweather.com/forecasts/v1/daily/1day/" + result + "?apikey=" + apikey + "&language=fr-fr",
                 HttpMethod.GET, null, new ParameterizedTypeReference<String>() {}, result).getBody();
 
         return finalResponse;
