@@ -82,6 +82,28 @@ public class ApplicationController {
         return finalResponse;
     }
 
+    // Get City 5 Day Forecast with Name
+    @ApiOperation(value = "Get 5 day forecast by cityName", response = ApplicationController.class, tags = "get5DayForecastByCityName")
+    @RequestMapping(value = "/get5DayForecastByCityName/{query}", method = RequestMethod.GET)
+    public String get5DayForecastByCityName(@PathVariable String query) {
+        String response = restTemplate.exchange("http://dataservice.accuweather.com/locations/v1/cities/search?apikey=" + apikey + "&q=" + query + "&language=fr-fr",
+                HttpMethod.GET, null, new ParameterizedTypeReference<String>() {}, query).getBody();
+
+        String json = response;
+        System.out.println(json);
+        json = json.substring(1, json.length() - 1);
+        System.out.println(json);
+        Map jsonJavaRootObject = new Gson().fromJson(json, Map.class);
+        System.out.println(jsonJavaRootObject.get("Key"));
+
+        String result = (String) jsonJavaRootObject.get("Key");
+
+        String finalResponse = restTemplate.exchange("http://dataservice.accuweather.com/forecasts/v1/daily/5day/" + result + "?apikey=" + apikey + "&language=fr-fr",
+                HttpMethod.GET, null, new ParameterizedTypeReference<String>() {}, result).getBody();
+
+        return finalResponse;
+    }
+
     @Bean
     public RestTemplate restTemplate() {
         return new RestTemplate();
